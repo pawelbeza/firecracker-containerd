@@ -493,12 +493,14 @@ func (ts *TaskService) Exec(requestCtx context.Context, req *taskAPI.ExecProcess
 	logger.Debug("exec")
 
 	defer func() {
+		logger.Debug("DOING CLEANUP")
 		if err != nil {
 			cleanupErr := ts.doCleanup(taskExecID)
 			if cleanupErr != nil {
 				logger.WithError(cleanupErr).Error("failed to cleanup task")
 			}
 		}
+		logger.Debug("FINISHED CLEANUP")
 	}()
 
 	extraData, err := unmarshalExtraData(req.Spec)
@@ -524,6 +526,7 @@ func (ts *TaskService) Exec(requestCtx context.Context, req *taskAPI.ExecProcess
 			return nil, err
 		}
 		ts.addCleanup(taskExecID, func() error {
+			logger.Debug("exec FIFOSET CLOSED")
 			return fifoSet.Close()
 		})
 
@@ -596,6 +599,8 @@ func (ts *TaskService) CloseIO(requestCtx context.Context, req *taskAPI.CloseIOR
 	})
 	defer logPanicAndDie(logger)
 	logger.Debug("close io")
+
+	logger.Debug("CLOSE IO REQUEST IS STDIN CLOSED", req.Stdin)
 
 	resp, err := ts.runcService.CloseIO(requestCtx, req)
 	if err != nil {

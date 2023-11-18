@@ -368,6 +368,7 @@ func (m *taskManager) AttachIO(_ context.Context, taskID, execID string, proxy I
 }
 
 func monitorIO(done <-chan error, proc *vmProc) {
+	proc.logger.Debug("BEFORE CLOSING PROXY 123")
 	<-done
 	proc.proxy.Close()
 	proc.logger.Debug("closed proxy")
